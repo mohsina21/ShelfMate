@@ -8,7 +8,7 @@ const Navbar = () => {
       ];
   return (
     <div>
-        <div className='w-full h-20 bg-[#020618] flex justify-center items-center '>
+        <div className='w-full h-20 bg-[#020618] flex justify-center items-center z-100 relative'>
   <GooeyNav
     items={items}
     animationTime={600}
