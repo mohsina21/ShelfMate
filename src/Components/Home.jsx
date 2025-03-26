@@ -3,7 +3,7 @@ import { LampDemo } from "./LampDemo";
 
 const Home = () => {
   return (
-   <div className='w-full h-full relative m-0 p-0 z-100 '>
+   <div className= 'text-white  relative justify-center items-centermb-0 pb-0 mt-0 pt-0'>
     <LampDemo />
 </div>
   )
