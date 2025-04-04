@@ -3,38 +3,44 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Home from './Components/Home';
 import About from './Components/About';
-import Mainpage from './Components/Mainpage';
+import Contact from './Components/Contact';
+import MainPage from './Components/MainPage';
 
-const App = () => {
-  const aboutRef = useRef(null); // Reference for the About section
+const ScrollWrapper = () => {
+  const homeRef = useRef(null);
+  const aboutRef = useRef(null);
+  const contactRef = useRef(null);
 
-  const handleScrollToAbout = () => {
-    if (aboutRef.current) {
-      aboutRef.current.scrollIntoView({ behavior: 'smooth' });
+  const sectionRefs = {
+    home: homeRef,
+    about: aboutRef,
+    contact: contactRef,
+  };
+
+  const handleScrollTo = (section) => {
+    const ref = sectionRefs[section];
+    if (ref?.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   return (
+    <>
+      <Navbar onNavigate={handleScrollTo} />
+      <div ref={homeRef}><Home /></div>
+      <div ref={aboutRef}><About /></div>
+      <div ref={contactRef}><Contact /></div>
+    </>
+  );
+};
+
+const App = () => {
+  return (
     <Router>
-      <div>
-        {/* Pass the scroll handler to the Navbar */}
-        <Navbar onAboutClick={handleScrollToAbout} />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Home />
-                <div ref={aboutRef}>
-                  <About />
-                </div>
-              </>
-            }
-          />
-          <Route path="/about" element={<About />} />
-          <Route path="/mainpage" element={<Mainpage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<ScrollWrapper />} />
+        <Route path="/mainpage" element={<MainPage />} />
+      </Routes>
     </Router>
   );
 };

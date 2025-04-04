@@ -97,7 +97,7 @@ const Mainpage = () => {
           <button
             onClick={handleSearch}
             disabled={loading}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition disabled:bg-gray-400"
+            className="bg-[#7356dd] hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition disabled:bg-gray-400"
           >
             {loading ? "Searching..." : "Search"}
           </button>
@@ -106,7 +106,7 @@ const Mainpage = () => {
 
  
       <div
-        className={`transition-all duration-500 ease-in-out bg-white text-black p-6 rounded-lg min-h-[180px] ${
+        className={`transition-all duration-500 ease-in-out bg-[#775dd3] text-black p-6 rounded-lg min-h-[180px] ${
           responseText || streamingText ? "w-full max-w-5xl" : " w-full max-w-3xl"
         }`}
       >
