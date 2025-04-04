@@ -6,9 +6,7 @@ import Mainpage from './Components/Mainpage'
 const App = () => {
   return (
     <div >
-      <Navbar />
-      <Home />
-      <About />
+      <Mainpage />
     </div>
   )
 }
