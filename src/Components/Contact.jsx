@@ -14,7 +14,7 @@ const Contact = () => {
             <a href="https://github.com/mohsina21" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">
               <FaGithub />
             </a>
-            <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">
+            <a href="https://www.linkedin.com/in/mohsina-parveen-577367203/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">
               <FaLinkedin />
             </a>
             <a href="https://twitter.com/notmohsina" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">

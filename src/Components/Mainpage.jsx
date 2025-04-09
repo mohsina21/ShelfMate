@@ -26,24 +26,37 @@ const Mainpage = () => {
     autoResize();
   }, [query]);
 
-  const appendAmazonLinks = (response) => {
-    const parts = response.split("\n").filter(line => line.trim() !== "");
-    const formatted = parts.map((line, index) => {
-      // First paragraph is the intro about the topic
-      if (index === 0 && !line.includes(":")) {
-        return `<p class="mb-4 italic text-gray-200">${line.trim()}</p>`;
+  const formatResponse = (response) => {
+    const lines = response.split("\n").filter(line => line.trim() !== "");
+    let formatted = "";
+    let books = [];
+  
+    lines.forEach((line, index) => {
+      const linkMatch = line.match(/\((https?:\/\/www\.amazon\.com\/[^)]+)\)/);
+      const hasDash = line.includes(" - ");
+  
+      if (index === 0 && !hasDash) {
+        formatted += `<p class="mb-4 italic text-gray-200"><strong>Answer:</strong> ${line.trim()}</p>`;
+      } else if (hasDash && linkMatch) {
+        books.push(line);
       }
-  
-      // Expected format: Book Title: Description
-      const [title, ...descParts] = line.split(":");
-      if (!descParts.length) return `<p>${line.trim()}</p>`; // Fallback for non-formatted lines
-  
-      const description = descParts.join(":").trim();
-      const amazonLink = `https://www.amazon.com/s?k=${encodeURIComponent(title.trim())}`;
-      return `<p><a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="text-yellow-300 font-semibold underline">${title.trim()}</a>: ${description}</p>`;
     });
   
-    return formatted.join("");
+    if (books.length) {
+      const recommendations = books.map(book => {
+        const linkMatch = book.match(/\((https?:\/\/www\.amazon\.com\/[^)]+)\)/);
+        const [titlePart, ...descPart] = book.split(" - ");
+        const title = titlePart.trim();
+        const description = descPart.join(" - ").replace(/\(https?:\/\/.*?\)/, "").trim();
+        const url = linkMatch ? linkMatch[1] : "#";
+  
+        return `<p><a href="${url}" target="_blank" rel="noopener noreferrer" class="text-yellow-300 font-semibold underline">${title}</a>: ${description}</p>`;
+      });
+  
+      formatted += `<div class="mt-6 space-y-2">${recommendations.join("")}</div>`;
+    }
+  
+    return formatted || "No suggestions found.";
   };
   
 
@@ -56,19 +69,28 @@ const Mainpage = () => {
       const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const prompt = `
-      Provide a short informative paragraph about the topic: "${query}".
-      
-      Then recommend 5 relevant books in this format:
-      Book Title: Short description.
-      
-      Do NOT use bullets or stars. Just separate them by line breaks.
-      Only the book title should be a clickable link.
-      `;
+Answer the following book-related question: "${query}" in a  paragraph.
+
+At the end, recommend 2–3 relevant books using this format (no Markdown):
+
+Title - Short Description (Amazon Product Link)
+
+Make sure:
+- The title is plain text (no brackets).
+- Only include direct product links (not search).
+- No bullet points, no markdown, no extra formatting.
+Example:
+The Hobbit - A fantasy adventure novel. (https://www.amazon.com/dp/B003ZX71RW)
+
+Only the title should be clickable in the output.
+`;
+
+
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
+      const formatted = formatResponse(response);
 
-      const formatted = appendAmazonLinks(response);
-      setResponseText(formatted || "No suggestions found.");
+      setResponseText(formatted);
     } catch (error) {
       console.error("Error fetching AI response:", error);
       setResponseText("Something went wrong. Please try again.");
@@ -79,44 +101,39 @@ const Mainpage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white flex flex-col items-center px-4 py-8 font-sans">
-      <h1 className="text-4xl font-bold text-center mb-2">📚 Ask Anything About Books</h1>
-      <p className="text-lg text-gray-300 mb-6">Get book recommendations and clickable links instantly!</p>
+    <div className="min-h-screen bg-[#020618] text-white flex flex-col items-center px-4 py-8 font-sans">
+      <h1 className="text-4xl font-bold text-center mb-2">Ask Anything About Books</h1>
       <hr className="border-gray-600 w-1/2 mb-10" />
 
       <div className="flex flex-col items-center space-y-4 w-full max-w-2xl mb-8">
         <div className="flex space-x-2 w-full">
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type your book-related question..."
-            className="flex-1 p-3 rounded-lg resize-none overflow-hidden text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <input
+  type="text"
+  value={query}
+  onChange={(e) => setQuery(e.target.value)}
+  placeholder="Type your book-related question..."
+  className="flex-1 px-4 py-3 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+/>
           <button
             onClick={handleSearch}
             disabled={loading}
-            className="bg-[#7356dd] hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition disabled:bg-gray-400"
+            className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-3 rounded-lg transition disabled:bg-gray-400"
           >
             {loading ? "Searching..." : "Search"}
           </button>
         </div>
       </div>
 
-      <div
-        className={`transition-all duration-500 ease-in-out bg-[#ffffff1a] text-white p-6 rounded-lg shadow-lg min-h-[180px] ${
-          responseText ? "w-full max-w-5xl" : "w-full max-w-3xl"
-        }`}
-      >
-        <h2 className="text-xl font-semibold mb-3">Answer:</h2>
-        <div
-          className="text-base leading-relaxed space-y-3"
-          dangerouslySetInnerHTML={{
-            __html: loading ? "Thinking..." : responseText || "Your answer will appear here.",
-          }}
-        />
-      </div>
+      {responseText && (
+        <div className="transition-all duration-500 ease-in-out bg-[#ffffff1a] text-white p-6 rounded-lg shadow-lg w-full max-w-5xl">
+          <div
+            className="text-base leading-relaxed space-y-3"
+            dangerouslySetInnerHTML={{
+              __html: loading ? "Thinking..." : responseText,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

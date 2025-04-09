@@ -30,7 +30,8 @@ const Navbar = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="w-full h-20 bg-[#020618] flex justify-center items-center relative">
+    <div className="w-full h-20 bg-[#020618] flex justify-center items-center fixed top-0 left-0 z-50">
+
       <GooeyNav
         items={items}
         animationTime={600}
@@ -44,6 +45,5 @@ const Navbar = ({ onNavigate }) => {
     </div>
   );
 };
-
 
 export default Navbar;
