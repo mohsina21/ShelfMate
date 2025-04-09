@@ -1,21 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
 const Mainpage = () => {
   const [query, setQuery] = useState("");
   const [responseText, setResponseText] = useState("");
-  const [streamingText, setStreamingText] = useState("");
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
 
   if (!apiKey) {
-    
-    return <div className="text-red-500 font-bold">API Key is missing! Check console.</div>;
+    return <div className="text-red-500 font-bold">API Key is missing! Check .env file.</div>;
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenerativeAI(apiKey);
 
   const autoResize = () => {
     if (inputRef.current) {
@@ -28,45 +26,49 @@ const Mainpage = () => {
     autoResize();
   }, [query]);
 
+  const appendAmazonLinks = (response) => {
+    const parts = response.split("\n").filter(line => line.trim() !== "");
+    const formatted = parts.map((line, index) => {
+      // First paragraph is the intro about the topic
+      if (index === 0 && !line.includes(":")) {
+        return `<p class="mb-4 italic text-gray-200">${line.trim()}</p>`;
+      }
+  
+      // Expected format: Book Title: Description
+      const [title, ...descParts] = line.split(":");
+      if (!descParts.length) return `<p>${line.trim()}</p>`; // Fallback for non-formatted lines
+  
+      const description = descParts.join(":").trim();
+      const amazonLink = `https://www.amazon.com/s?k=${encodeURIComponent(title.trim())}`;
+      return `<p><a href="${amazonLink}" target="_blank" rel="noopener noreferrer" class="text-yellow-300 font-semibold underline">${title.trim()}</a>: ${description}</p>`;
+    });
+  
+    return formatted.join("");
+  };
+  
+
   const handleSearch = async () => {
     if (!query.trim()) return;
     setLoading(true);
     setResponseText("");
-    setStreamingText("");
 
     try {
-      const chat = ai.chats.create({
-        model: "gemini-2.0-flash",
-        history: [
-          {
-            role: "user",
-            parts: [{ text: "Hello" }],
-          },
-          {
-            role: "model",
-            parts: [{ text: "Great to meet you. What would you like to know?" }],
-          },
-        ],
-      });
+      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const stream = await chat.sendMessageStream({
-        message: query,
-      });
+      const prompt = `
+      Provide a short informative paragraph about the topic: "${query}".
+      
+      Then recommend 5 relevant books in this format:
+      Book Title: Short description.
+      
+      Do NOT use bullets or stars. Just separate them by line breaks.
+      Only the book title should be a clickable link.
+      `;
+      const result = await model.generateContent(prompt);
+      const response = await result.response.text();
 
-      let finalText = "";
-      for await (const chunk of stream) {
-        finalText += chunk.text;
-        const cleanedChunk = chunk.text
-          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-          .replace(/\*(.*?)\*/g, "$1");
-        setStreamingText((prev) => prev + cleanedChunk);
-      }
-
-      const formattedResponse = finalText
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.*?)\*/g, "$1");
-
-      setResponseText(formattedResponse || "No response found. Try again.");
+      const formatted = appendAmazonLinks(response);
+      setResponseText(formatted || "No suggestions found.");
     } catch (error) {
       console.error("Error fetching AI response:", error);
       setResponseText("Something went wrong. Please try again.");
@@ -77,13 +79,11 @@ const Mainpage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020618] text-white flex flex-col items-center px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-2">
-        Ask Anything About Books 📚
-      </h1>
-      <hr className="border-gray-400 w-1/2 mb-10" />
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white flex flex-col items-center px-4 py-8 font-sans">
+      <h1 className="text-4xl font-bold text-center mb-2">📚 Ask Anything About Books</h1>
+      <p className="text-lg text-gray-300 mb-6">Get book recommendations and clickable links instantly!</p>
+      <hr className="border-gray-600 w-1/2 mb-10" />
 
-    
       <div className="flex flex-col items-center space-y-4 w-full max-w-2xl mb-8">
         <div className="flex space-x-2 w-full">
           <textarea
@@ -104,19 +104,16 @@ const Mainpage = () => {
         </div>
       </div>
 
- 
       <div
-        className={`transition-all duration-500 ease-in-out bg-[#775dd3] text-black p-6 rounded-lg min-h-[180px] ${
-          responseText || streamingText ? "w-full max-w-5xl" : " w-full max-w-3xl"
+        className={`transition-all duration-500 ease-in-out bg-[#ffffff1a] text-white p-6 rounded-lg shadow-lg min-h-[180px] ${
+          responseText ? "w-full max-w-5xl" : "w-full max-w-3xl"
         }`}
       >
-        <h2 className="text-lg font-semibold mb-2">Answer:</h2>
-        <p
-          className="text-base leading-relaxed whitespace-pre-line"
+        <h2 className="text-xl font-semibold mb-3">Answer:</h2>
+        <div
+          className="text-base leading-relaxed space-y-3"
           dangerouslySetInnerHTML={{
-            __html: loading
-              ? streamingText || "Thinking..."
-              : responseText || "Your answer will appear here.",
+            __html: loading ? "Thinking..." : responseText || "Your answer will appear here.",
           }}
         />
       </div>
