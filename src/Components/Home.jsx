@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LampContainer } from "./LampDemo";  
-import { TypewriterEffectSmooth } from './TypeWriterEffect';
+import { TypewriterEffectSmooth } from './TypewriterEffect';
 
 const Home = () => {
   const navigate = useNavigate();
