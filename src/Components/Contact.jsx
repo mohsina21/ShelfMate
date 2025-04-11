@@ -1,6 +1,7 @@
 // Contact.jsx
 import React from 'react';
-import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { FaGithub, FaLinkedin,  } from 'react-icons/fa';
+import { RiTwitterXFill } from 'react-icons/ri';
 
 const Contact = () => {
   return (
@@ -17,8 +18,8 @@ const Contact = () => {
             <a href="https://www.linkedin.com/in/mohsina-parveen-577367203/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">
               <FaLinkedin />
             </a>
-            <a href="https://twitter.com/notmohsina" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">
-              <FaTwitter />
+            <a href="https://x.com/notmohsina" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400">
+            <RiTwitterXFill />
             </a>
           </div>
         </div>

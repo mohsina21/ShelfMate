@@ -308,12 +308,18 @@ const GooeyNav = ({
                 onClick={(e) => handleClick(e, index)}
               >
                 <a
-                  href={item.href}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  className="outline-none"
-                >
-                  {item.label}
-                </a>
+  href={item.href || "#"}
+  onClick={(e) => {
+    e.preventDefault();
+    item.onClick?.();
+    handleClick(e, index);
+  }}
+  onKeyDown={(e) => handleKeyDown(e, index)}
+  className="outline-none"
+>
+  {item.label}
+</a>
+
               </li>
             ))}
           </ul>

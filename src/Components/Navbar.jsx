@@ -5,40 +5,26 @@ const Navbar = ({ onNavigate }) => {
   const items = [
     {
       label: "Home",
-      element: (
-        <button onClick={() => onNavigate("home")} className="text-white hover:text-blue-400 transition">
-          Home
-        </button>
-      ),
+      onClick: () => onNavigate("home"),
     },
     {
       label: "About",
-      element: (
-        <button onClick={() => onNavigate("about")} className="text-white hover:text-blue-400 transition">
-          About
-        </button>
-      ),
+      onClick: () => onNavigate("about"),
     },
     {
       label: "Contact",
-      element: (
-        <button onClick={() => onNavigate("contact")} className="text-white hover:text-blue-400 transition">
-          Contact
-        </button>
-      ),
+      onClick: () => onNavigate("contact"),
     },
   ];
 
   return (
-    <div className="w-full h-20 bg-[#020618] flex justify-center items-center fixed top-0 left-0 z-50">
-
+    <div className="w-full h-20 bg-[#020618] opacity-75 flex justify-center items-center fixed top-0 left-0 z-50">
       <GooeyNav
         items={items}
         animationTime={600}
-        pCount={15}
-        minDistance={20}
-        maxDistance={12}
-        maxRotate={75}
+        particleCount={15}
+        particleDistances={[90, 10]}
+        particleR={100}
         colors={[1, 2, 3, 1, 2, 3, 1, 4]}
         timeVariance={300}
       />

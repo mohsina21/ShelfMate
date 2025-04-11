@@ -30,18 +30,24 @@ const Mainpage = () => {
     const lines = response.split("\n").filter(line => line.trim() !== "");
     let formatted = "";
     let books = [];
-  
+
     lines.forEach((line, index) => {
       const linkMatch = line.match(/\((https?:\/\/www\.amazon\.com\/[^)]+)\)/);
       const hasDash = line.includes(" - ");
-  
+
       if (index === 0 && !hasDash) {
         formatted += `<p class="mb-4 italic text-gray-200"><strong>Answer:</strong> ${line.trim()}</p>`;
-      } else if (hasDash && linkMatch) {
+      }
+
+      if (line.includes("Here are some book recommendations")) {
+        formatted += `<p class="mt-4 font-bold text-white">Here are some book recommendations based on your prompt:</p>`;
+      }
+
+      if (hasDash && linkMatch) {
         books.push(line);
       }
     });
-  
+
     if (books.length) {
       const recommendations = books.map(book => {
         const linkMatch = book.match(/\((https?:\/\/www\.amazon\.com\/[^)]+)\)/);
@@ -49,16 +55,15 @@ const Mainpage = () => {
         const title = titlePart.trim();
         const description = descPart.join(" - ").replace(/\(https?:\/\/.*?\)/, "").trim();
         const url = linkMatch ? linkMatch[1] : "#";
-  
+
         return `<p><a href="${url}" target="_blank" rel="noopener noreferrer" class="text-yellow-300 font-semibold underline">${title}</a>: ${description}</p>`;
       });
-  
+
       formatted += `<div class="mt-6 space-y-2">${recommendations.join("")}</div>`;
     }
-  
+
     return formatted || "No suggestions found.";
   };
-  
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -69,22 +74,25 @@ const Mainpage = () => {
       const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const prompt = `
-Answer the following book-related question: "${query}" in a  paragraph.
+Answer the following book-related question in a paragraph:
 
-At the end, recommend 2–3 relevant books using this format (no Markdown):
+"${query}"
 
+Then, on a new line, include the following statement in bold:
+**Here are some book recommendations based on your question:**
+
+After that, list relevant books in this format (no markdown, no bullet points):
 Title - Short Description (Amazon Product Link)
 
-Make sure:
-- The title is plain text (no brackets).
-- Only include direct product links (not search).
-- No bullet points, no markdown, no extra formatting.
+Formatting rules:
+- The title should be plain text (not in brackets).
+- Only include direct Amazon product links (e.g., https://www.amazon.com/dp/XXXXXXXXXX).
+- Do not use markdown, bullets, or any extra formatting.
+- Only the title should be clickable in the output.
+
 Example:
 The Hobbit - A fantasy adventure novel. (https://www.amazon.com/dp/B003ZX71RW)
-
-Only the title should be clickable in the output.
-`;
-
+      `;
 
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
@@ -107,13 +115,13 @@ Only the title should be clickable in the output.
 
       <div className="flex flex-col items-center space-y-4 w-full max-w-2xl mb-8">
         <div className="flex space-x-2 w-full">
-        <input
-  type="text"
-  value={query}
-  onChange={(e) => setQuery(e.target.value)}
-  placeholder="Type your book-related question..."
-  className="flex-1 px-4 py-3 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-/>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Type your book-related question..."
+            className="flex-1 px-4 py-3 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
           <button
             onClick={handleSearch}
             disabled={loading}

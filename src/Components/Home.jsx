@@ -9,10 +9,10 @@ const Home = () => {
   return (
     <div className="text-white relative flex flex-col items-center justify-center min-h-screen -mt-3">
       <LampContainer />
-      <div className="absolute top-1/3 flex flex-col items-center text-center -mt-24 pt-0">
+      <div className="absolute top-1/3 flex flex-col items-center text-center mt-24 pt-0  ">
         <TypewriterEffectSmooth 
-          words={[{ text: "ShelfMate" }]} 
-          className="text-5xl font-bold  mt-28 opacity-65"
+          words={[{ text: "SHELFMATE" }]} 
+          className="text-6xl font-bold  mt-28np opacity-65"
           
         />
         <TypewriterEffectSmooth 
